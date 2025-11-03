@@ -5,7 +5,7 @@ from machine import Pin
 
 #import wifi
 import secrets
-import wifi
+from utils import wifi
 from utils import wifiSecrets
 CLIENT_ID = b"pico-motion" 
 
