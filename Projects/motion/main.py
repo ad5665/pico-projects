@@ -6,13 +6,14 @@ from machine import Pin
 #import wifi
 import secrets
 import wifi
+from utils import wifiSecrets
 CLIENT_ID = b"pico-motion" 
 
 # Set up PIR sensor
 pir = Pin(15, Pin.IN)
 
 # Connect tp Wi-Fi up
-wlan = wifi.connect(secrets.WIFI_SSID, secrets.WIFI_PASS, hostname="pico-motion")
+wlan = wifi.connect(wifiSecrets.WIFI_SSID, wifiSecrets.WIFI_PASS, hostname="pico-motion")
 print("Wi-Fi:", wifi.ifconfig(wlan))
 
 # Connect to MQTT
@@ -31,7 +32,7 @@ print("Connected to MQTT")
 prev_state = 0
 while True:
     # Keep Wi-Fi solid (handles AP blips)
-    wlan = wifi.ensure_connected(wlan, secrets.WIFI_SSID, secrets.WIFI_PASS)
+    wlan = wifi.ensure_connected(wlan, wifiSecrets.WIFI_SSID, wifiSecrets.WIFI_PASS)
 
     state = pir.value()
     if state != prev_state:
