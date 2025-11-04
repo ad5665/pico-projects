@@ -31,13 +31,15 @@ print('Response content:', quote)
 # Saves lines after each example!
 def clearLCD():
     time.sleep(3)
-    screen.lcd.clear()
+    lcd.clear()
 
 
 
-
+print("BEFORE WRITING")
 # Show a string on the LCD
-screen().putstr("Hello, World!")
+lcd = screen()  # instantiate it once
+
+lcd.putstr("Hello, World!")
 
 
 # This is how you move the cursor
@@ -45,8 +47,8 @@ screen().putstr("Hello, World!")
 # 1st number is column (X), 2nd number is row (Y)
 # Numbers start at zero
 # (0,0) is the 1st column, 1st row
-screen.move_to(0, 1)
-screen.putstr("Second row!")
+lcd.move_to(0, 1)
+lcd.putstr("Second row!")
 clearLCD()
 
 print("*********************************")
