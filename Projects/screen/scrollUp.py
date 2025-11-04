@@ -1,4 +1,11 @@
 import time
+from screen.lcdSetup import screen
+lcd = screen()
+
+# Define LCD rows/columns
+LCD_NUM_ROWS = 2
+LCD_NUM_COLS = 16
+
 
 def _rpad(s, w):
     # Right-pad with spaces without using str.ljust (MicroPython-safe)

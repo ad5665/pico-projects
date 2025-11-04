@@ -71,4 +71,4 @@ crawl = (
     "Rebel spaceships, striking from a hidden base, have won their first victory..."
 )
 
-#ScrollUp(crawl, delay=0.5)
+ScrollUp(crawl, delay=0.5)
