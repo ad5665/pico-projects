@@ -1,17 +1,7 @@
 import requests
-import time
 
-from utils import wifi
-from utils import wifiSecrets
-
-from screen.lcdSetup import screen
-from screen.scrollUp import ScrollUp
-from screen.scrollLeft import ScrollLeft
-from screen.scrollLeft2Lines import ScrollLeft2Lines
-
-# Connect tp Wi-Fi up
-wlan = wifi.connect(wifiSecrets.WIFI_SSID, wifiSecrets.WIFI_PASS, hostname="pico-motion")
-print("Wi-Fi:", wifi.ifconfig(wlan))
+from screen import *
+from utils import *
 
 
 # Make GET request
@@ -27,14 +17,6 @@ quote = data["content"]
 print('Response code: ', response_code)
 print('Response content:', quote)
 
-# Just a function to sleep and then clear the LCD
-def clearLCD():
-    time.sleep(3)
-    lcd.clear()
-
-
-# instantiate the screen once
-lcd = screen()
 
 print("*********************************")
 print("Display is now showing characters")
