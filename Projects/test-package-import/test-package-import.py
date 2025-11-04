@@ -1,6 +1,8 @@
-from screen import *
+import screen 
+from utils import *
 
-lcd.putstr("Simples")
+#screen.lcd.putstr("Simples")
 
+screen.ScrollUp("STOP BE SUCH A NERD ALEX, GOD DAMMIT IM A NOOB")
 
-clearLCD()
+screen.clearLCD()
