@@ -1,4 +1,10 @@
-import screen.lcdSetup as lcd
+import time
+from screen.lcdSetup import screen
+lcd = screen()
+
+# Define LCD rows/columns
+LCD_NUM_ROWS = 2
+LCD_NUM_COLS = 16
 
 def ScrollLeft2Lines(text, delay=0.3):
     """
@@ -9,16 +15,16 @@ def ScrollLeft2Lines(text, delay=0.3):
     """
 
     # Pad text with blanks so it scrolls smoothly off the screen
-    padded = text + (" " * lcd.LCD_NUM_COLS * lcd.LCD_NUM_ROWS)
+    padded = text + (" " * LCD_NUM_COLS * LCD_NUM_ROWS)
 
     # Total scroll length (enough to fully clear)
-    for i in range(len(padded) - (lcd.LCD_NUM_COLS * lcd.LCD_NUM_ROWS) + 1):
+    for i in range(len(padded) - (LCD_NUM_COLS * LCD_NUM_ROWS) + 1):
         # Grab a window of 32 chars (2 lines × 16 chars)
-        window = padded[i:i + (lcd.LCD_NUM_COLS * lcd.LCD_NUM_ROWS)]
+        window = padded[i:i + (LCD_NUM_COLS * LCD_NUM_ROWS)]
 
         # Split it into two lines
-        line1 = window[:lcd.LCD_NUM_COLS]
-        line2 = window[lcd.LCD_NUM_COLS:lcd.LCD_NUM_COLS*2]
+        line1 = window[:LCD_NUM_COLS]
+        line2 = window[LCD_NUM_COLS:LCD_NUM_COLS*2]
 
         # Move cursor to start
         lcd.move_to(0, 0)

@@ -4,10 +4,10 @@ import time
 from utils import wifi
 from utils import wifiSecrets
 
-#from machine import I2C
-
 from screen.lcdSetup import screen
 from screen.scrollUp import ScrollUp
+from screen.scrollLeft import ScrollLeft
+from screen.scrollLeft2Lines import ScrollLeft2Lines
 
 # Connect tp Wi-Fi up
 wlan = wifi.connect(wifiSecrets.WIFI_SSID, wifiSecrets.WIFI_PASS, hostname="pico-motion")
@@ -28,41 +28,22 @@ print('Response code: ', response_code)
 print('Response content:', quote)
 
 # Just a function to sleep and then clear the LCD
-# Saves lines after each example!
 def clearLCD():
     time.sleep(3)
     lcd.clear()
 
 
-
-print("BEFORE WRITING")
-# Show a string on the LCD
-lcd = screen()  # instantiate it once
-
-lcd.putstr("Hello, World!")
-
-
-# This is how you move the cursor
-# We moved it to the second row
-# 1st number is column (X), 2nd number is row (Y)
-# Numbers start at zero
-# (0,0) is the 1st column, 1st row
-lcd.move_to(0, 1)
-lcd.putstr("Second row!")
-clearLCD()
+# instantiate the screen once
+lcd = screen()
 
 print("*********************************")
 print("Display is now showing characters")
 print("*********************************")
 
-
-#for i in range(500): 
-#    lcd.putstr("Count: " + str(i))
-#    time.sleep(1)
-#    lcd.clear()
+#ScrollLeft2Lines("BOOOOOOOO0000000000000000000")
 
 # Run our function
-#ScrollUp(str(quote))
+ScrollUp(str(quote))
 
 crawl = (
     "A long time ago in a galaxy far, far away..."
