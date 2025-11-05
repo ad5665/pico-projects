@@ -22,7 +22,7 @@ print("*********************************")
 print("Display is now showing characters")
 print("*********************************")
 
-#ScrollLeft2Lines("BOOOOOOOO0000000000000000000")
+ScrollLeft("BOOOOOOOO0000000000000000000")
 
 # Run our function
 ScrollUp(str(quote))

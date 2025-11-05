@@ -13,3 +13,6 @@ def clearLCD():
 
 # instantiate the screen once
 lcd = screen()
+
+# Define what `from screen import *` will expose
+__all__ = ["lcd", "clearLCD", "ScrollUp", "ScrollLeft", "ScrollLeft2Lines"]
