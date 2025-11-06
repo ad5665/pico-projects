@@ -2,8 +2,9 @@ from machine import Pin
 import time
 import screen 
 
-from utils import connect, ifconfig
+from utils import connect, ifconfig, SMTP
 from utils.wifiSecrets import WIFI_SSID, WIFI_PASS
+from utils.smtpSecrets import SMTP_HOST, SMTP_USER, SMTP_PASS, SMTP_TO
 
 wlan = connect(WIFI_SSID, WIFI_PASS, hostname="pico-test")
 print("Wi-Fi:", ifconfig(wlan))
@@ -36,20 +37,24 @@ while True:
     if _pressed:
         _pressed = False
 
-        # Draw only when needed; don't clear every frame
-        # Use a smaller delay so it feels responsive
-        screen.ScrollUp(crawl, delay=0.1)   # tune this (0.02–0.1 usually feels good)
+        # Send the email
+        smtp = SMTP('smtp.gmail.com', 465, ssl=True) # Gmail's SSL port
 
-        # If ScrollUp is long & you want to catch presses during it,
-        # modify ScrollUp to yield periodically or break on a flag.
+        try:
+            smtp.login(SMTP_USER, SMTP_PASS)
+            smtp.to(SMTP_TO)
+            smtp.write("From:" + SMTP_USER + "<"+ SMTP_USER+">\n")
+            smtp.write("Subject: Lizard\n")
+            smtp.write(crawl)
+            smtp.send()
+            print("Email Sent Successfully")
+        
+        except Exception as e:
+            print("Failed to send email:", e)
+        finally:
+            smtp.quit()
+
+        screen.ScrollUp(crawl, delay=0.1)
 
     # Small idle sleep to yield CPU
     time.sleep_ms(10)
-
-#while True:
-#    #time.sleep(0.2)
-#
-#    if button.value() == 1:
-#        screen.ScrollUp(crawl, delay=0.5)
-#
-#    screen.clearLCD()

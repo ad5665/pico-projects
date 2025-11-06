@@ -6,4 +6,5 @@
 #print("Wi-Fi:", wifi.ifconfig(wlan))
 
 from .wifi import connect, ensure_connected, ifconfig
-__all__ = ["connect", "ensure_connected", "ifconfig"]
+from .umail import SMTP
+__all__ = ["connect", "ensure_connected", "ifconfig", "SMTP"]
