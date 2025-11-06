@@ -1,3 +1,16 @@
 {
-    "micropico.syncFolder": "Projects"
+    "micropico.syncFolder": "Projects",
+    "python.languageServer": "Pylance",
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportMissingModuleSource": "none",
+        "reportShadowedImports": "none"
+    },
+    "python.analysis.extraPaths": [
+        "c:\\Users\\Adam\\.vscode\\extensions\\wmerkens.vscode-circuitpython-v2-0.3.3\\boards\\0x239A\\0x8120",
+        "c:\\Users\\Adam\\.vscode\\extensions\\wmerkens.vscode-circuitpython-v2-0.3.3\\stubs",
+        "c:\\Users\\Adam\\AppData\\Roaming\\Code\\User\\globalStorage\\wmerkens.vscode-circuitpython-v2\\bundle\\20251105\\adafruit-circuitpython-bundle-py-20251105\\lib"
+    ],
+    "circuitpython.board.version": null,
+    "circuitpython.board.vid": "0x239A",
+    "circuitpython.board.pid": "0x8120"
 }

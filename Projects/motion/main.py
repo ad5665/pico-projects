@@ -3,18 +3,21 @@ from umqtt.simple import MQTTClient
 from picozero import pico_led
 from machine import Pin
 
-#import wifi
+# Import MQTT secrets
 import secrets
-from utils import wifi
-from utils import wifiSecrets
+
+#import wifi
+from utils import connect, ifconfig
+from utils.wifiSecrets import WIFI_SSID, WIFI_PASS
+
 CLIENT_ID = b"pico-motion" 
 
 # Set up PIR sensor
 pir = Pin(15, Pin.IN)
 
 # Connect tp Wi-Fi up
-wlan = wifi.connect(wifiSecrets.WIFI_SSID, wifiSecrets.WIFI_PASS, hostname="pico-motion")
-print("Wi-Fi:", wifi.ifconfig(wlan))
+wlan = connect(WIFI_SSID, WIFI_PASS, hostname="pico-motion")
+print("Wi-Fi:", ifconfig(wlan))
 
 # Connect to MQTT
 client = MQTTClient(
