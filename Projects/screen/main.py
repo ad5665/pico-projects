@@ -1,8 +1,12 @@
 import requests
 
 from screen import *
-from utils import *
+# Import wifi
+from utils import connect, ifconfig
+from utils.wifiSecrets import WIFI_SSID, WIFI_PASS
 
+wlan = connect(WIFI_SSID, WIFI_PASS, hostname="pico-screen")
+print("Wi-Fi:", ifconfig(wlan))
 
 # Make GET request
 response = requests.get("https://api.quotable.io/random")
