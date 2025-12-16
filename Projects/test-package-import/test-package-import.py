@@ -8,6 +8,6 @@ print("Wi-Fi:", ifconfig(wlan))
 
 #screen.lcd.putstr("Simples")
 
-screen.ScrollUp("STOP BE SUCH A NERD ALEX, GOD DAMMIT IM A NOOB")
+screen.ScrollUp("UP UP UP")
 
 screen.clearLCD()

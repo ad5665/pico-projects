@@ -1,0 +1,293 @@
+esphome:
+  name: esp32-32s
+  friendly_name: esp32-32s
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret esp32_32s_api_key
+
+ota:
+  - platform: esphome
+    password: !secret esp32_32s_ota_pw
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  domain: !secret domain
+  use_address: !secret ip
+  manual_ip:
+    static_ip: !secret ip
+    gateway: 10.0.0.1
+    subnet: 255.255.255.0
+    dns1: 10.0.0.1 
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: !secret esp32_32s_ap_id
+    password: !secret esp32_32s_ap_pw
+
+captive_portal:
+    
+
+# I2C for the OLED
+i2c:
+  sda: 21
+  scl: 22
+  scan: true
+
+# Display: SH1106
+display:
+  - platform: ssd1306_i2c
+    id: my_lcd
+    model: "SH1106 128x64"
+    address: 0x3C
+    rotation: 0
+    lambda: |-
+      if (!id(in_control)) {
+        it.print(0, 0, id(font_small), "Devices");
+        for (int i = 0; i < 3; i++) {
+          if (i == id(menu_index)) {
+            it.filled_rectangle(0, 12 + i*16, 2, 14);
+          }
+          it.print(4, 14 + i*16, id(font_small), id(device_names)[i].c_str());
+        }
+      } 
+      else {
+        it.print(0, 0, id(font_small), "Brightness");
+        it.printf(0, 20, id(font_small), "%d%%", id(brightness));
+      }
+
+
+# fonts
+font:
+  - file: "fonts/LiberationSans-Regular.ttf"
+    id: font_small
+    size: 12
+  - file: "fonts/LiberationSans-Regular.ttf"
+    id: font_small_invert
+    size: 12
+
+# ----------------------------------------------------------------------------- #
+sensor:
+  # for brightness of lights
+  - platform: homeassistant
+    id: desk_lamp_brightness_ha
+    entity_id: light.desk_lamp
+    attribute: brightness
+
+  - platform: homeassistant
+    id: study_lamp_brightness_ha
+    entity_id: light.study_lamp
+    attribute: brightness
+
+  - platform: homeassistant
+    id: study_lights_brightness_ha
+    entity_id: light.study_lights
+    attribute: brightness
+
+  # ---------------------- #
+  # Rotary senor -> on_value, change menu nav value, or if in not in menu, change the brightness of menu index entity 
+  - platform: rotary_encoder
+    name: "Rotary Encoder"
+    id: rotary_sensor
+    pin_a: 32
+    pin_b: 33
+    resolution: 1
+    on_value:
+      then:
+        - lambda: |-
+            int val = (int) round(id(rotary_sensor).state);
+            int delta = val - id(last_encoder_val);
+            if (delta != 0) {
+              int step = delta > 0 ? 1 : -1;
+              if (!id(in_control)) {
+                // menu navigation
+                if (step > 0) {
+                  id(menu_index) = (id(menu_index) + 1) % id(num_devices);
+                }
+                else {
+                  id(menu_index) = (id(menu_index) - 1 + id(num_devices)) % id(num_devices);
+                }
+                ESP_LOGD("rotary", "menu_index -> %d (val=%d delta=%d)", id(menu_index), val, delta);
+              } 
+
+              else {
+                // brightness control
+                if (step > 0) {
+                  id(brightness) = std::min(100, id(brightness) + 5); //stf:min - gets smallest value between 100 and brightness, so it doesn't error 
+                }
+                else {
+                  id(brightness) = std::max(0, id(brightness) - 5);
+                }
+
+                // register which entity to call
+                if (id(menu_index) == 0) {
+                  id(last_sent_entity) = 0;
+                }
+                else if (id(menu_index) == 1) {
+                  id(last_sent_entity) = 1;
+                }
+                else {
+                  id(last_sent_entity) = 2;
+                }
+
+                ESP_LOGD("rotary", "adjust brightness -> %d%% (entity=%d)", id(brightness), id(last_sent_entity));
+              }
+            }
+            id(last_encoder_val) = val;
+
+        # call HA service only when in control (and last_sent_entity indicates which)
+        - if:
+            condition:
+              lambda: 'return id(in_control);'
+            then:
+              - if:
+                  condition:
+                    lambda: 'return id(last_sent_entity) == 0;'
+                  then:
+                    - homeassistant.service:
+                        service: light.turn_on
+                        data:
+                          entity_id: light.desk_lamp
+                          brightness_pct: !lambda 'return id(brightness);'
+              - if:
+                  condition:
+                    lambda: 'return id(last_sent_entity) == 1;'
+                  then:
+                    - homeassistant.service:
+                        service: light.turn_on
+                        data:
+                          entity_id: light.study_lamp
+                          brightness_pct: !lambda 'return id(brightness);'
+              - if:
+                  condition:
+                    lambda: 'return id(last_sent_entity) == 2;'
+                  then:
+                    - homeassistant.service:
+                        service: light.turn_on
+                        data:
+                          entity_id: light.study_lights
+                          brightness_pct: !lambda 'return id(brightness);'
+# ----------------------------------------------------------------------------- #
+
+# ----------------------------------------------------------------------------- #
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: 25
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "Encoder Button"
+    filters:
+      - delayed_on: 10ms
+      - delayed_off: 10ms
+    on_press:
+      then:
+        - lambda: |-
+            bool entering = !id(in_control);
+            id(in_control) = entering;
+            if (entering) {
+              float raw = NAN;
+              if (id(menu_index) == 0) {
+                raw = id(desk_lamp_brightness_ha).state;
+              }
+              else if (id(menu_index) == 1) {
+                raw = id(study_lamp_brightness_ha).state;
+              }
+              else if (id(menu_index) == 2) {
+                raw = id(study_lights_brightness_ha).state;
+              }
+
+              if (isnan(raw) || raw <= 0.0) {
+                id(brightness) = 0;
+              } else {
+                id(brightness) = (int) round((raw / 255.0) * 100.0); //Convert to out of 100% brightness and not 255
+              }
+              // reset encoder baseline so rotation doesn't jump immediately
+              id(last_encoder_val) = (int) round(id(rotary_sensor).state);
+              ESP_LOGD("rotary", "entering control: menu=%d raw=%f pct=%d", id(menu_index), raw, id(brightness));
+            } 
+            else {
+              ESP_LOGD("rotary", "exiting control: menu=%d", id(menu_index));
+            }
+
+  - platform: gpio
+    pin:
+      number: 26
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "Back Button"
+    filters:
+      - delayed_on: 10ms
+      - delayed_off: 10ms
+    on_press:
+      then:
+        - lambda: |-
+            if (id(in_control)) {
+              id(in_control) = false;
+              ESP_LOGD("rotary", "back pressed -> exit control");
+            } else {
+              id(menu_index) = 0;
+              ESP_LOGD("rotary", "back pressed -> reset menu");
+            }
+
+  - platform: gpio
+    pin:
+      number: 27
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "Confirm Button"
+    filters:
+      - delayed_on: 10ms
+    on_press:
+      then:
+        - homeassistant.service: 
+            service: homeassistant.toggle
+            data:
+              entity_id: light.study_lights
+            on_success:
+              - logger.log: "Toggled demo light"
+            on_error:
+              - logger.log: "Failed to toggle demo light"
+# ----------------------------------------------------------------------------- #
+
+# ----------------------------------------------------------------------------- #
+# ---- globals used by above ----
+globals:
+  - id: menu_index
+    type: int
+    restore_value: true
+    initial_value: '0'
+  - id: last_encoder_val
+    type: int
+    restore_value: false
+    initial_value: '0'
+  - id: num_devices
+    type: int
+    restore_value: false
+    initial_value: '3'
+  - id: in_control
+    type: bool
+    restore_value: true
+    initial_value: 'false'
+  - id: brightness
+    type: int
+    restore_value: true
+    initial_value: '50'
+  - id: last_sent_entity
+    type: int
+    restore_value: false
+    initial_value: '0'
+  - id: device_names
+    type: std::vector<std::string>
+    restore_value: false
+    initial_value: '{"Desk Lamp", "Study Lamp", "Study Lights"}'
